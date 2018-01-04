@@ -1,5 +1,6 @@
 package com.example.yash.sunshine;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -48,9 +50,9 @@ import retrofit.client.Response;
 public class ForecastFragment extends Fragment {
 
 
-    List<Model.List> listTemp;
+    private List<Model.List> listTemp;
 
-    ArrayAdapter<String> mForecastAdapter;
+    private  ArrayAdapter<String> mForecastAdapter;
 
     ListView listView;
 
@@ -91,7 +93,7 @@ public class ForecastFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
 
-        String[] forecastArray = {
+        final String[] forecastArray = {
                 "Today - Sunny - 88/63",
                 "Tomorrow - Foggy - 48/63",
                 "Weds - Sunny - 88/63",
@@ -104,11 +106,24 @@ public class ForecastFragment extends Fragment {
 
         List<String> weekForcast = new ArrayList<String>(Arrays.asList(forecastArray));
 
-//        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, weekForcast);
+        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, weekForcast);
 
 
         listView = rootView.findViewById(R.id.listview_forecast);
-//        listView.setAdapter(mForecastAdapter);
+        listView.setAdapter(mForecastAdapter);
+
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String forcast = mForecastAdapter.getItem(i);
+
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, forcast);
+                startActivity(intent);
+            }
+        });
+
 
 
         return rootView;
@@ -165,6 +180,9 @@ public class ForecastFragment extends Fragment {
                 }
 
                 /*return resultStrs;*/
+
+
+
                 mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, resultStrs);
                 listView.setAdapter(mForecastAdapter);
 
