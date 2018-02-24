@@ -104,13 +104,15 @@ public class ForecastFragment extends Fragment {
         };
 
 
-        List<String> weekForcast = new ArrayList<String>(Arrays.asList(forecastArray));
+        /*List<String> weekForcast = new ArrayList<String>(Arrays.asList(forecastArray));
 
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, weekForcast);
+        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, weekForcast);*/
 
 
         listView = rootView.findViewById(R.id.listview_forecast);
-        listView.setAdapter(mForecastAdapter);
+        /*listView.setAdapter(mForecastAdapter);*/
+
+        callFetchTemp();
 
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -142,6 +144,9 @@ public class ForecastFragment extends Fragment {
 
                     listTemp = new ArrayList<>();
                     listTemp = getTempResponse.getList();
+
+                } else if (getTempResponse.getCod().equals("404")) {
+                    Toast.makeText(getActivity(), getTempResponse.getMessage().toString(), Toast.LENGTH_SHORT).show();
 
                 }
 
@@ -191,6 +196,8 @@ public class ForecastFragment extends Fragment {
             @Override
             public void failure(RetrofitError error) {
                 Log.e("Failed", String.valueOf(error));
+                Toast.makeText(getActivity(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -215,7 +222,8 @@ public class ForecastFragment extends Fragment {
     private Map<String, String> getTempMap() {
         Map<String, String> map = new HashMap<>();
 
-        map.put("zip", "94040");
+        /*map.put("zip", "94043");*/
+        map.put("q", "Ahmedabad,IN");
         map.put("mode", "json");
         map.put("units", "metric");
         map.put("appid", "3277cd3bdf4f5e347c993c7b5600470d");
