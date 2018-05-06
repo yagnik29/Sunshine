@@ -1,9 +1,9 @@
 package com.example.yash.sunshine;
 
 import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
@@ -19,29 +19,19 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import Model.GetTempResponse;
-import Model.Main;
 import Webservices.ApiHandler;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+
+import static Constant.Constant.strOWAppId;
 
 /**
  * Created by Yash on 02-Jan-18.
@@ -52,7 +42,7 @@ public class ForecastFragment extends Fragment {
 
     private List<Model.List> listTemp;
 
-    private  ArrayAdapter<String> mForecastAdapter;
+    private ArrayAdapter<String> forcastAdapter;
 
     ListView listView;
 
@@ -77,8 +67,14 @@ public class ForecastFragment extends Fragment {
 
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            callFetchTemp();
 
+
+            forcastAdapter.notifyDataSetInvalidated();
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String location = preferences.getString("location", "94043");
+
+            callFetchTemp(location);
             return true;
 
         }
@@ -104,21 +100,19 @@ public class ForecastFragment extends Fragment {
         };
 
 
-        /*List<String> weekForcast = new ArrayList<String>(Arrays.asList(forecastArray));
 
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, weekForcast);*/
 
 
         listView = rootView.findViewById(R.id.listview_forecast);
-        /*listView.setAdapter(mForecastAdapter);*/
+        /*listView.setAdapter(forcastAdapter);*/
 
-        callFetchTemp();
+
 
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String forcast = mForecastAdapter.getItem(i);
+                String forcast = forcastAdapter.getItem(i);
 
                 Intent intent = new Intent(getActivity(), DetailActivity.class)
                         .putExtra(Intent.EXTRA_TEXT, forcast);
@@ -131,9 +125,15 @@ public class ForecastFragment extends Fragment {
         return rootView;
     }
 
-    private void callFetchTemp() {
+    @Override
+    public void onStart() {
+        super.onStart();
+        callFetchTemp("94043");
+    }
 
-        ApiHandler.getApiService().getTempResponse(getTempMap(), new Callback<GetTempResponse>() {
+    private void callFetchTemp(String location) {
+
+        ApiHandler.getApiService().getTempResponse(getTempMap(location), new Callback<GetTempResponse>() {
             @Override
             public void success(GetTempResponse getTempResponse, Response response) {
 
@@ -187,9 +187,9 @@ public class ForecastFragment extends Fragment {
                 /*return resultStrs;*/
 
 
+                forcastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, resultStrs);
+                listView.setAdapter(forcastAdapter);
 
-                mForecastAdapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forcast, R.id.list_item_forcast_textview, resultStrs);
-                listView.setAdapter(mForecastAdapter);
 
             }
 
@@ -219,14 +219,14 @@ public class ForecastFragment extends Fragment {
         return shortDateFormat.format(dateTime);
     }
 
-    private Map<String, String> getTempMap() {
+    private Map<String, String> getTempMap(String location) {
         Map<String, String> map = new HashMap<>();
 
-        /*map.put("zip", "94043");*/
-        map.put("q", "Ahmedabad,IN");
+        map.put("zip", location);
+        /*map.put("q", "Ahmedabad,IN");*/
         map.put("mode", "json");
         map.put("units", "metric");
-        map.put("appid", "3277cd3bdf4f5e347c993c7b5600470d");
+        map.put("appid", strOWAppId);
         map.put("cnt", "7");
 
 
